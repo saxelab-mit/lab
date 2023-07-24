@@ -1,0 +1,115 @@
+The scripts are organized in the order in which they can or should be run. 
+
+
+LAB STANDARD SCRIPTS: 
+
+required processes: 
+
+1) heudiconv 
+2) fmriprep
+3) event files and contrast file --> BIDS 
+4) motion exclusions 
+5) first level 
+6) second level 
+
+Note: 
+Step (7) is recommended, especially for use of any later scripts. 
+Steps (9)+ are not in any particular order, though you may need to run (11, whole brain analyses) if you are using group analyses to e.g. constrain search spaces for ROI extraction
+
+USING THE LAB STANDARD SCRIPTS: 
+
+You should have a folder on openmind that you use to run the scripts. Your folder should be organized like this template directory. 
+
+Scripts can be run through an SSH session in terminal or by logging onto openmind using Fastx for desktop or browser. When submitting job arrays, you do not actually need to start an interactive session, but see the openmind wikis about how to get setup on fastx/in a session and how to submit an interactive  sesion (i.e. work on a compute node) if you want to do other things besides submit job arrays. E.g. when running the drypass command for heudiconv, you should be in an interactive session. But for job submission it's not necessary. 
+
+NOTE: PATHS.txt is used by all scripts to find data/scripts/etc; this must only contain the path to your project directory. E.g. for this template project directory on openmind, the full path is provided. 
+
+
+Running the commands: 
+
+all scripts in the "required processes" list above except for 3  use the following organization: 
+
+
+There is a script that submits a job array (usually 'submit_<someprocess>_array.sh') which calls another bash script, (usually <someprocess>_single_subject.sh, or whatever other .sh script is not the one that submits arrays). The submit-array script calls the single-subject script for any subjects given, and it runs them in parallels as separate SLURM jobs. 
+
+The single subject .sh script is what actually submits each job on Openmind through the SLURM job scheduler, and this script uses a singularity container from <main project dir>/singularity_images/ to either directly run a command, or to call a script (e.g. a .py script in the same folder). 
+
+That is to say, if there is a .py script in the folder for a given step, that .py script is doing the real work, and taking some arguments from the single subject script. You only run the single subject script by calling the submit-array script,  
+
+**You only ever need to use the submit-array scripts, even if you are running a single subject. You can submit one subject to an array, or as many as you want. The single subject and submit-array scripts all take the same arguments. It is just set up to expect input from the submit-array script, so this is easier. 
+
+
+Event editing (3) is just a bash script that you run like this (from inside 3_transfer_contrasts_and_events/) 
+
+   ./move_events_and_contrasts.sh
+
+(the ./ part is equivalent to running source command)
+
+
+Flexibilities: 
+
+fmriprep: (TO-DO) build in flexibility for creating deterministic output by limiting the number of threads and setting fixed seeds for random processes 
+
+transfer_contrasts_and_events: the provided script is not necessary to use, but contrast and event files must be transferred to the BIDS directory (events TSV files to BIDS/<subject>/func/ , replacing the empty template files, and contrasts TSV file to BIDS/code/ which is a subfolder of BIDS that must be created). 
+
+TIER: creating the TIER directory is strongly recommended to organize data, but it is not strictly necessary. Scripts after second level expect TIER organization. If you use TIER, it should be done after 2nd level. 
+
+Analyses: after 2nd level scripts, whether you do univariate ROI or whole brain analyses, multivariate ROI or whole brain analyses, RDMs, etc, is entirely up to you. Some scripts are provided here as templates, but these are not comprehensive and may not meed all of your needs. Your current lab tech may be able to help set up scripts that you want beyond those provided. 
+
+
+A note on organization: 
+
+Data organization is expected to be in BIDS format, and scripts operate under the assumption that relative to the main project directory, scripts and data have the same organization as this template. If you choose to reorganize the structure of your project folder, including data or scripts organization, you will probably see errors. If you think there is a better general organization, please feel free to suggest standardized changes to your current lab tech.  
+
+
+
+USING TIER, UNIVARIATE, MULTIVARIATE, AND WHOLE BRAIN SCRIPTS: 
+
+These scripts are set up as jupyter notebooks, and parameters need to be edited in them before they can be run for your projects. 
+
+To learn more about using jupyter notebooks, see the wiki on python resources (lab github wiki), but here's an overview.  
+
+You have to first start an interactive session, e.g.: 
+
+1) open fastx (see wiki) and open terminal 
+
+2) run command to start interactive session: 
+srun -n 1 -t 6:00:00 --mem=25GB --pty bash
+
+... and NOTE WHAT NODE you get placed on. (Should be in your terminal hostname, or type the command 'hostname' to get the node #. e.g. I might be on node 005)
+
+3) cd into your main project directory
+
+4) run this command (note: the -B commands are to bind singularity dirs to OM dirs, you can exclude the ones that aren't where your project folder is hosted, except the cm one): 
+
+singularity exec --cleanenv -B /nese:/nese -B /om3:/om3 -B /om:/om -B /cm:/cm -B /om2:/om2 -B /mindhive:/mindhive singularity_images/univariate_08272021.sif \ 
+/neurodocker/startup.sh jupyter-notebook --ip=0.0.0.0 --port=9494 --no-browser 
+
+
+5) Once this starts, go to terminal on your local computer, and run: 
+
+ssh -N -L 9494:node005:9494 kolydic@openmind7.mit.edu
+
+... where you change the node005 to be nodeXXX whatever number node you're on, and change kolydic to your login 
+
+It will prompt for your password then look like it's hanging and not doing anything. It always looks like that. 
+
+
+6) Open a browser (e.g. chrome) and type in the address bar: 
+
+http://localhost:9494/
+
+or if that doesn't work, just:  localhost:9494 
+
+
+7) it will open jupyter notebooks, but will expect a password or "token" -- this string can be found in the output in your fastx terminal after connecting to   jupyter notebooks. The last line should show some HTML links like "to access the notebook, open this file in a browser" <link> or copy and paste one of these URLS <link> or <link> --- in those last links (either of them) the end of the link is something like ?token=23kjnf23oi290j209j2039j i.e. "/?token=<some long string>"
+
+^^ copy the long string of numbers and letters after the =, and paste this into the text box of your localhost:9494 browser that takes the token and then you can connect. 
+
+Now you can navigate to directories of your master project folder and open jupyter notebooks to edit and run them. You should checkpoint often and make sure to save your edits regularly! Also note that some scripts, e.g. univariate analyses, might take a long time (several hours) if you have many subjects and many contrasts or ROIs, so make sure to request enough time for your interactive session, or just save your edits in the jupyter notebook and use the .sh script to submit the notebook as a job. 
+
+
+
+
+
+

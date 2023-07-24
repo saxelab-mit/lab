@@ -1,0 +1,16 @@
+task	desc	conds	weights
+morphing	car_gt_rest	car	1
+morphing	happy_gt_rest	hap	1
+morphing	angry_gt_rest	ang	1
+morphing	repeats_gt_rest	rep	1
+morphing	faces_gt_rest	hap ang	0.5 0.5
+morphing	faces_gt_cars	hap ang car	0.5 0.5 -1
+morphing	cars_gt_faces	hap ang car	-0.5 -0.5 1
+morphing	happy_gt_angry	hap ang	1 -1
+morphing	angry_gt_happy	hap ang	-1 1
+morphing	happy_gt_cars	hap car	1 -1
+morphing	angry_gt_cars	ang car	1 -1
+sholo	face_gt_rest	face	1
+sholo	objects_gt_rest	objects	1
+sholo	faces_gt_objects	face objects	1 -1
+sholo	objects_gt_faces	face objects	-1 1

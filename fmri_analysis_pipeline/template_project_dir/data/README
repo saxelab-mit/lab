@@ -1,0 +1,58 @@
+data/ folder template for organization: 
+
+
+atlases/ : 
+
+contains a copy of the anatomical atlas used by fmriprep. In fmriprep scripts it is called by its exact file name, but you can replace this with another atlas if you choose. Currently the fmriprep command run in scripts/2_fmriprep_scripts expects this atlas in this path relative to the project directory. 
+
+
+
+behavioral_logs/ :
+
+this is an optional folder. This folder is intended to hold the raw log files or behavioral data from the experiment. 
+
+
+BIDS/ :
+
+this directory is not yet shown. It is automatically created by heudiconv, and follows standard BIDS format. See the fMRI wiki for more information. In general, you should not write files into the BIDS directory if they are not BIDS-compliant; it can cause errors. 
+ 
+
+
+
+contrast_files/ :
+
+You can create your contrast file and keep it here before ever having collected data or created the BIDS directory. There is an example contrast file here. Note, the 3rd step in scripts/ (scripts/3_transfer_contrasts_and_events) updates the contrast file and all subjects' functional event files in the BIDS directory, and the .sh script in that folder expects to copy the contrast file from this location. This must obviously be run after heudiconv, once the BIDS directory exists (for event files, the subject folder in BIDS must also exist), and this must be done before the 1st level scripts are run, but using the template scripts is not strictly necessary. 
+
+
+
+
+dicoms/ : 
+
+dicoms folder contains per-subject folders (named by subject identifier) with raw dicom data collected from scanner. Raw volumes are copied from their Sigma directory (see fMRI wiki for details) to: dicoms/<subject>/dicom/ . All details and example command to find data and copy in fMRI wiki (in Saxelab group on MIT Github enterprise). 
+
+
+
+
+event_files/ :
+
+similar to contrast_files/, this folder can contain the appropriate BIDS-structure event files for each subject, each task, and each functional run. See the example contents. Note that event files in the BIDS structure contain a specific naming scheme, and the script in scripts/3_transfer_contrasts_and_events which syncs event files from here to BIDS/<subject>/func/ expects the files here to already have the correct names and headers. This naming scheme is found in the empty/default event files produced in the BIDS directory when running heudiconv. Event files are tab-delimited files containing stimulus presentation and optionally response information. Examples provide further details 
+
+
+
+
+ROI_masks/ :
+
+a folder containing parcels or ROI masks in MNI space that you can use for ROI analyses. The template scripts that use ROIs actually expect the ROIs to be in a TIER directory; the TIER builder scripts are set up to copy from this directory to TIER. 
+
+
+
+subject_lists/ :
+
+this folder's contents are all optional. It is recommended to have a text file of all subject names that will be run through scripts (since the scripts are often organized to submit arrays taking one to all subjects' identifiers as input arguments), or alternatively, to have copies of the commands run in a text file to show which subjects were processed through each step already. It is also recommended to keep a spreadsheet here containing information about subject exclusions or issues with the data / etc. 
+
+
+
+
+
+
+

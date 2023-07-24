@@ -1,0 +1,32 @@
+contrasts.tsv template shown is from the Open Autism project. 
+It demonstrates several important things: 
+
+- multiple tasks (experiments) can be included in the same contrasts file. In fact, you should only have one contrasts file per BIDS dataset. The column 'task' indicates which task the contrasts belong to; task names must be consistent across functional data and the contrasts / event files, etc. That is, whatever you have defined in your heudiconv heuristic file (heudi.py in scripts/1_heudiconv_scripts/heuristic_file) should be used here, as this will allow matching to correct functional data files.  
+
+
+- the description should be a single string (using _ or - is ok), describing what the contrast is (a single condition as compared to rest/non-modelled data? a condition preferred over another condition? a category of conditions over another category of conditions?)
+
+- the weights applied must sum to 0 and are listed in the same order as the contrast's conditions under 'conds' 
+
+- you can list conditions under 'conds' that are not weighted in a given contrast, and therefore the weight is 0 (e.g. if you list all conditions under 'conds' column for every contrast, but some contrasts don't use or care about a subset of that full set of conditions, then that subset can just be weighted as 0)
+
+- you can have multiple conditions on either side of a contrast: e.g. if I have faces_bright, faces_dark, cars_bright, and cars_dark,  I can run a contrast of bright over dark by saying: 
+
+task	desc		conds						weights
+mytask	bright_gt_dark 	faces_bright faces_dark cars_bright cars_dark 	1 -1 1 -1
+
+
+- you can also have imbalanced conditions, but they still must sum to 0. E.g. if I have faces, bodies, objects, scenes, I might want the contrast of faces over everything else, except squares, which was an extra condition I don't want included. That would look like: 
+
+
+task 	desc		conds 					weights
+dyloc 	faces_gt_else	faces bodies squares objects scenes	1 -1/3 0 -1/3 -1/3
+
+
+
+note: in the descriptions, 'gt' refers to 'greater than' i.e. preferred over dispreffered
+
+TIP: it is good to have a key of your descriptions that are elaborated/ fleshed out, so that you will always know exactly what the point of a given condition was, especially if you use simplistic abbreviations or acronyms in your descriptions. 
+
+
+
